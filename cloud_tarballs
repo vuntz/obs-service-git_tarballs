@@ -108,7 +108,7 @@ def update_version_in_spec(package, version, latest_commit):
     with open(package + '.spec', 'r+') as f:
         contents = f.read()
         f.seek(0)
-        f.write(re.sub(r'((Version:\s+).*)\n', r'\2%s\n' % new_version,
+        f.write(re.sub(r'^((Version:\s+).*)$', r'\2%s' % new_version,
                        contents, re.MULTILINE))
 
 
