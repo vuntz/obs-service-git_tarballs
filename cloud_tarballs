@@ -35,6 +35,8 @@ parser.add_argument('--package', required=True,
                     help='the rpm package name')
 parser.add_argument('--filename',
                     help='where to save the downloaded tarball')
+parser.add_argument('--outdir',
+                    help='what am I supposed to do with this?')
 
 
 def download_tarball(component, version, filename):
