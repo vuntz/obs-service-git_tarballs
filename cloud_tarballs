@@ -145,8 +145,10 @@ def create_changes(changes_list, our_version):
     timestamp = datetime.utcnow().strftime('%a %b %e %T UTC %Y')
     author = 'cloud-devel@suse.de'
     commit_hash = changes_diff[0]['commit'][:COMMIT_HASH_SIZE]
-    commits = "  + " + "\n  + ".join(c['message'] for c in changes_diff)
 
+    # XXX Merge commits should be skipped when parsing the changelog
+    commits = "  + " + "\n  + ".join(c['message'] for c in changes_diff
+                                     if not c['message'].startswith('Merge "'))
     change = (
         '--------------------------------------------------------------------\n'
         '%(timestamp)s - %(author)s\n'
