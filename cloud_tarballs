@@ -55,7 +55,6 @@ def download_tarball(component, version, filename):
 
 
 def get_changelog_from_tarball(tar_name):
-    basename = tar_name.split('.tar.gz')[0]
     with tarfile.open(tar_name) as tar:
         changelog_file = next(f for f in tar.getnames()
                               if f.endswith('ChangeLog'))
@@ -63,6 +62,14 @@ def get_changelog_from_tarball(tar_name):
         changelog = tar.extractfile(t).read()
     return changelog
 
+
+def get_version_from_tarball(tar_name):
+    with tarfile.open(tar_name) as tar:
+        try:
+            return tar.firstmember.name.split('-', 1)[1]
+        except IndexError:
+            sys.exit("Could not figure out version from directory "
+                     "inside tarball: " + tar.firstmember.name)
 
 def get_latest_commit(changelog):
     try:
@@ -102,9 +109,9 @@ def get_commit_from_spec(package):
 
 
 def update_version_in_spec(package, version, latest_commit):
-    new_version = '%s.%s.%s' % (version.replace('-', '_'),
-                                datetime.utcnow().strftime('%s'),
-                                latest_commit[:COMMIT_HASH_SIZE])
+    new_version = '%s+git.%s.%s' % (version,
+                                    datetime.utcnow().strftime('%s'),
+                                    latest_commit[:COMMIT_HASH_SIZE])
     with open(package + '.spec', 'r+') as f:
         contents = f.read()
         f.seek(0)
@@ -178,4 +185,5 @@ if __name__ == '__main__':
     update_changes_file(args.package, changes)
 
     latest_commit = get_latest_commit(changelog)
-    update_version_in_spec(args.package, args.version, latest_commit)
+    upstream_version = get_version_from_tarball(args.filename)
+    update_version_in_spec(args.package, upstream_version, latest_commit)
