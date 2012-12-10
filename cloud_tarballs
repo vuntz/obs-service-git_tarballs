@@ -31,12 +31,10 @@ parser.add_argument('--component', required=True,
                     help='openstack component e.g. nova, keystone, novaclient')
 parser.add_argument('--version', required=True,
                     help='component version')
+parser.add_argument('--filename', required=True,
+                    help='where to save the downloaded tarball')
 parser.add_argument('--package', required=True,
                     help='the rpm package name')
-parser.add_argument('--filename',
-                    help='where to save the downloaded tarball')
-parser.add_argument('--outdir',
-                    help='what am I supposed to do with this?')
 
 
 def download_tarball(component, version, filename):
@@ -51,11 +49,9 @@ def download_tarball(component, version, filename):
         'host': TARBALLS, 'component': component, 'version': version}
 
     try:
-        saved_filename, headers = urllib.urlretrieve(url, filename)
+        urllib.urlretrieve(url, filename)
     except IOError as e:
         sys.exit(e)
-
-    return saved_filename
 
 
 def get_changelog_from_tarball(tar_name):
@@ -186,13 +182,13 @@ def update_changes_file(package, changes):
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    filename = download_tarball(args.component, args.version, args.filename)
-    changelog = get_changelog_from_tarball(filename)
+    download_tarball(args.component, args.version, args.filename)
+    changelog = get_changelog_from_tarball(args.filename)
     our_commit = get_commit_from_spec(args.package)
     changes_list = parse_changelog(changelog)
     changes = create_changes(changes_list, our_commit)
     update_changes_file(args.package, changes)
 
     latest_commit = get_latest_commit(changelog)
-    upstream_version = get_version_from_tarball(filename)
+    upstream_version = get_version_from_tarball(args.filename)
     update_version_in_spec(args.package, upstream_version, latest_commit)

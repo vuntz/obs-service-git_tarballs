@@ -11,9 +11,10 @@
   </param>
   <param name="package">
     <description>RPM package name.</description>
-    <requried/>
+    <required/>
   </param>
   <param name="filename">
     <description>Name of the filename where the tarball will be downloaded.</description>
+    <required/>
   </param>
 </service>
