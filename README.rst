@@ -21,7 +21,6 @@ TODO:
 * ignore Merge commits
 * use current user's email address in .changes file
 * stop parsing when we reach the last known commit
-* service documentation
 * tests
 * a proper package
 
