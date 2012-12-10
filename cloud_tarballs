@@ -114,16 +114,17 @@ def create_changes(changes_list, our_commit):
 
     timestamp = datetime.utcnow().strftime("%a %b %e %T UTC %Y")
     author = 'cloud-devel@suse.de'
-    commit = changes_diff[0]['commit'][:COMMIT_HASH_SIZE]
-    changes = "  + " + "\n  + ".join(c['message'] for c in changes_diff)
+    commit_hash = changes_diff[0]['commit'][:COMMIT_HASH_SIZE]
+    commits = "  + " + "\n  + ".join(c['message'] for c in changes_diff)
 
     change = (
         '--------------------------------------------------------------------\n'
         '%(timestamp)s - %(author)s\n'
         '\n'
-        '- Update to latest git (%(commit)s):\n'
-        '%(changes)s\n'
+        '- Update to latest git (%(commit_hash)s):\n'
+        '%(commits)s\n'
         '\n' % locals())
+
     return change
 
 
