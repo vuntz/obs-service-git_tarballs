@@ -116,6 +116,7 @@ def update_version_in_spec(package, version, latest_commit, filename):
     with open(package + '.spec', 'r+') as f:
         contents = f.read()
         f.seek(0)
+        f.truncate()
         contents = re.sub(r'\n((Version:\s+).*)\n',
                           r'\n\g<2>%s\n' % new_version,
                           contents, count=1)
