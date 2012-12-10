@@ -36,6 +36,7 @@ parser.add_argument('--filename', required=True,
 parser.add_argument('--package', required=True,
                     help='the rpm package name')
 
+
 def download_tarball(component, version, filename):
     """Download an upstream tarball
 
@@ -63,8 +64,15 @@ def get_changelog_from_tarball(tar_name):
     return changelog
 
 
+def get_latest_commit(changelog):
+    try:
+        return re.search(r'^commit (.*?)$', changelog, re.MULTILINE).group(1)
+    except AttributeError:
+        sys.exit("Could not parse ChangeLog file.")
+
+
 def parse_changelog(changelog):
-    """Parse a git ChangeLog file returning a list of dicts
+    """Parse a git ChangeLog file returning an iterable of dicts
 
     :changelog: string with the contents of the file
 
@@ -93,10 +101,24 @@ def get_commit_from_spec(package):
             sys.exit("Could not parse version from spec file")
 
 
+def update_version_in_spec(package, version, latest_commit):
+    new_version = '%s.%s.%s' % (version.replace('-', '_'),
+                                datetime.utcnow().strftime('%s'),
+                                latest_commit[:COMMIT_HASH_SIZE])
+    with open(package + '.spec', 'r+') as f:
+        contents = f.read()
+        f.seek(0)
+        f.write(re.sub(r'((Version:\s+).*)\n', r'\2%s\n' % new_version,
+                       contents, re.MULTILINE))
+
+
 def diff_changes(changes_list, our_version):
-    """
+    """Return a list of dict changes newer than the ones in our_version
+    
     :changes_list: a list of dicts from the ChangeLog file
     :our_version: a git commit hash of the current version from the spec file
+
+    Returns an empty list if there are no newer commits.
 
     """
     new_changes = []
@@ -152,3 +174,6 @@ if __name__ == '__main__':
     changes_list = parse_changelog(changelog)
     changes = create_changes(changes_list, our_commit)
     update_changes_file(args.package, changes)
+
+    latest_commit = get_latest_commit(changelog)
+    update_version_in_spec(args.package, args.version, latest_commit)

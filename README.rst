@@ -9,7 +9,7 @@ Requires argparse which is part of python2.7, but available as a third-party dep
 TODO:
 
 * ignore Merge commits
-* update the spec file with the new version number
+* use current user's email address in .changes file
 * service documentation
 * tests
 * a proper package
