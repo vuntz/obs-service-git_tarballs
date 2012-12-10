@@ -24,7 +24,6 @@ TODO:
 * use current user's email address in .changes file
 * stop parsing when we reach the last known commit
 * tests
-* a proper package
 
 
 .. _Open Build Service: http://openbuildservice.org/
