@@ -87,7 +87,8 @@ def parse_changelog(changelog):
 def get_commit_from_spec(package):
     with open(package + '.spec') as f:
         try:
-            return re.search(r'Version:\s+.*\.(.*?)\s+', f.read()).group(1)
+            return re.search(r'^Version:\s+.*\+git\.\d+\.(.*?)(\s+#)?$',
+                             f.read(), flags=re.MULTILINE).group(1)
         except AttributeError:
             sys.exit("Could not parse version from spec file")
 
