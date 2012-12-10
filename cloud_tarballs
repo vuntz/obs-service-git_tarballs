@@ -109,10 +109,18 @@ def diff_changes(changes_list, our_version):
     return new_changes
 
 
-def create_changes(changes_list, our_commit):
-    changes_diff = diff_changes(changes_list, our_commit)
+def create_changes(changes_list, our_version):
+    """Return a string with the new changes for the .changes file
 
-    timestamp = datetime.utcnow().strftime("%a %b %e %T UTC %Y")
+    :changes_list: a list of dicts from the ChangeLog file
+    :our_version: a git commit hash of the current version from the spec file
+
+    """
+    changes_diff = diff_changes(changes_list, our_version)
+    if not changes_diff:
+        sys.exit("There are no new changes.")
+
+    timestamp = datetime.utcnow().strftime('%a %b %e %T UTC %Y')
     author = 'cloud-devel@suse.de'
     commit_hash = changes_diff[0]['commit'][:COMMIT_HASH_SIZE]
     commits = "  + " + "\n  + ".join(c['message'] for c in changes_diff)
