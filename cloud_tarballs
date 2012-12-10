@@ -16,6 +16,7 @@
 
 import argparse
 from datetime import datetime
+import glob
 import re
 import sys
 import tarfile
@@ -113,20 +114,21 @@ def update_version_in_spec(package, version, latest_commit, filename):
     new_version = '%s+git.%s.%s' % (version,
                                     datetime.utcnow().strftime('%s'),
                                     latest_commit[:COMMIT_HASH_SIZE])
-    with open(package + '.spec', 'r+') as f:
-        contents = f.read()
-        f.seek(0)
-        f.truncate()
-        contents = re.sub(r'\n((Version:\s+).*)\n',
-                          r'\n\g<2>%s\n' % new_version,
-                          contents, count=1)
-        contents = re.sub(r'\n((%define majorversion ).*)\n',
-                          r'\n\g<2>%s\n' % version,
-                          contents, count=1)
-        contents = re.sub(r'\n((Source:\s+).*)\n',
-                          r'\n\g<2>%s\n' % filename,
-                          contents, count=1)
-        f.write(contents)
+    for specfile in glob.glob('./*.spec'):
+        with open(specfile, 'r+') as f:
+            contents = f.read()
+            f.seek(0)
+            f.truncate()
+            contents = re.sub(r'\n((Version:\s+).*)\n',
+                              r'\n\g<2>%s\n' % new_version,
+                              contents, count=1)
+            contents = re.sub(r'\n((%define majorversion ).*)\n',
+                              r'\n\g<2>%s\n' % version,
+                              contents, count=1)
+            contents = re.sub(r'\n((Source:\s+).*)\n',
+                              r'\n\g<2>%s\n' % filename,
+                              contents, count=1)
+            f.write(contents)
 
 
 def diff_changes(changes_list, our_version):
@@ -178,11 +180,12 @@ def create_changes(changes_list, our_version):
 
 
 def update_changes_file(package, changes):
-    with open(package + '.changes', 'r+') as f:
-        contents = f.read()
-        f.seek(0)
-        f.write(changes)
-        f.write(contents)
+    for changes_file in glob.glob('./*.changes'):
+        with open(changes_file, 'r+') as f:
+            contents = f.read()
+            f.seek(0)
+            f.write(changes)
+            f.write(contents)
 
 
 if __name__ == '__main__':
