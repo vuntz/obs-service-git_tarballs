@@ -117,8 +117,13 @@ def update_version_in_spec(package, version, latest_commit):
     with open(package + '.spec', 'r+') as f:
         contents = f.read()
         f.seek(0)
-        f.write(re.sub(r'\n((Version:\s+).*)\n', r'\n\g<2>%s\n' % new_version,
-                       contents))
+        contents = re.sub(r'\n((Version:\s+).*)\n',
+                          r'\n\g<2>%s\n' % new_version,
+                          contents)
+        contents = re.sub(r'\n((%define majorversion ).*)\n',
+                          r'\n\g<2>%s\n' % version,
+                          contents)
+        f.write(contents)
 
 
 def diff_changes(changes_list, our_version):
