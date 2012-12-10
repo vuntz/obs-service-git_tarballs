@@ -8,12 +8,14 @@ Requires argparse which is part of python2.7, but available as a third-party dep
 
 Uses a ``majorversion`` macro in the spec file which contains the upstream stable version number.
 
-The spec files should already contain the macro and ``%setup`` should use it e.g.
+The spec files should already contain the macro and ``%setup`` should use it e.g::
 
-::
-  %define majorversion 201
-  ...
-  %setup -q -n %{component}-%{majorversion}
+    %define majorversion 201
+    ...
+    %setup -q -n %{component}-%{majorversion}
+
+
+The ``cloud_tarballs`` service will also change the specfile's ``Source:`` to the ``filename`` argument of the service.
 
 
 TODO:

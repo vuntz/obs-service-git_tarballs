@@ -109,7 +109,7 @@ def get_commit_from_spec(package):
             sys.exit("Could not parse version from spec file")
 
 
-def update_version_in_spec(package, version, latest_commit):
+def update_version_in_spec(package, version, latest_commit, filename):
     new_version = '%s+git.%s.%s' % (version,
                                     datetime.utcnow().strftime('%s'),
                                     latest_commit[:COMMIT_HASH_SIZE])
@@ -118,10 +118,13 @@ def update_version_in_spec(package, version, latest_commit):
         f.seek(0)
         contents = re.sub(r'\n((Version:\s+).*)\n',
                           r'\n\g<2>%s\n' % new_version,
-                          contents)
+                          contents, count=1)
         contents = re.sub(r'\n((%define majorversion ).*)\n',
                           r'\n\g<2>%s\n' % version,
-                          contents)
+                          contents, count=1)
+        contents = re.sub(r'\n((Source:\s+).*)\n',
+                          r'\n\g<2>%s\n' % filename,
+                          contents, count=1)
         f.write(contents)
 
 
@@ -192,4 +195,5 @@ if __name__ == '__main__':
 
     latest_commit = get_latest_commit(changelog)
     upstream_version = get_version_from_tarball(args.filename)
-    update_version_in_spec(args.package, upstream_version, latest_commit)
+    update_version_in_spec(args.package, upstream_version, latest_commit,
+                           args.filename)
