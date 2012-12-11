@@ -13,4 +13,8 @@
     <description>Name of the filename where the tarball will be downloaded.</description>
     <required/>
   </param>
+  <param name="email">
+    <description>User's email that will be used to sign the rpm's .changes file</description>
+    <required/>
+  </param>
 </service>

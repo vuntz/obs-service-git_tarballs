@@ -33,6 +33,8 @@ parser.add_argument('--filename', required=True,
                     help='where to save the downloaded tarball')
 parser.add_argument('--package', required=True,
                     help='the rpm package name')
+parser.add_argument('--email', required=True,
+                    help='email of the commit author (for the .changes file)')
 parser.add_argument('--outdir', help='osc service parameter that does nothing')
 
 
@@ -143,11 +145,12 @@ def diff_changes(changes_list, our_version):
     return new_changes
 
 
-def create_changes(changes_list, our_version):
+def create_changes(changes_list, our_version, email):
     """Return a string with the new changes for the .changes file
 
     :changes_list: a list of dicts from the ChangeLog file
     :our_version: a git commit hash of the current version from the spec file
+    :email: email address used to sing the .changes file
 
     """
     changes_diff = diff_changes(changes_list, our_version)
@@ -155,7 +158,6 @@ def create_changes(changes_list, our_version):
         sys.exit("There are no new changes.")
 
     timestamp = datetime.utcnow().strftime('%a %b %e %T UTC %Y')
-    author = 'cloud-devel@suse.de'
     commit_hash = changes_diff[0]['commit'][:COMMIT_HASH_SIZE]
 
     # XXX Merge commits should be skipped when parsing the changelog
@@ -163,7 +165,7 @@ def create_changes(changes_list, our_version):
                                      if not c['message'].startswith('Merge "'))
     change = (
         '--------------------------------------------------------------------\n'
-        '%(timestamp)s - %(author)s\n'
+        '%(timestamp)s - %(email)s\n'
         '\n'
         '- Update to latest git (%(commit_hash)s):\n'
         '%(commits)s\n'
@@ -187,7 +189,7 @@ if __name__ == '__main__':
     changelog = get_changelog_from_tarball(args.filename)
     our_commit = get_commit_from_spec(args.package)
     changes_list = parse_changelog(changelog)
-    changes = create_changes(changes_list, our_commit)
+    changes = create_changes(changes_list, our_commit, args.email)
     update_changes_file(args.package, changes)
 
     latest_commit = get_latest_commit(changelog)
