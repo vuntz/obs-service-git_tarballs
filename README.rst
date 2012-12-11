@@ -1,6 +1,6 @@
-================================================
+=========================================
  OBS service for downloading git tarballs
-================================================
+=========================================
 
 This is an `Open Build Service`_ source service.
 
@@ -27,5 +27,3 @@ TODO:
 
 
 .. _Open Build Service: http://openbuildservice.org/
-
-

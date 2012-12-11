@@ -1,6 +1,6 @@
 <service name="cloud_tarballs">
-  <summary>Download OpenStack tarballs and update package data</summary>
-  <description>This service downloads OpenStack component tarballs from upstream and updates the spec file version and changes file</description>
+  <summary>Download tarballs and update package data</summary>
+  <description>This service downloads tarballs and updates the spec file version and changes file</description>
   <param name="url">
     <description>URL of the tarball to download. It should contain a ChangeLog file in git log format.</description>
     <required/>
