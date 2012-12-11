@@ -26,18 +26,6 @@ import urllib
 COMMIT_HASH_SIZE = 7
 
 
-parser = argparse.ArgumentParser(description='Git Tarballs')
-parser.add_argument('--url', required=True,
-                    help='URL to download the tarball from')
-parser.add_argument('--filename', required=True,
-                    help='where to save the downloaded tarball')
-parser.add_argument('--package', required=True,
-                    help='the rpm package name')
-parser.add_argument('--email', required=True,
-                    help='email of the commit author (for the .changes file)')
-parser.add_argument('--outdir', help='osc service parameter that does nothing')
-
-
 def download_tarball(url, filename):
     """Download an upstream tarball
 
@@ -184,7 +172,21 @@ def update_changes_file(package, changes):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Git Tarballs')
+    parser.add_argument('--url', required=True,
+                        help='upstream tarball URL to download')
+    parser.add_argument('--filename',
+                        help='where to save the downloaded tarball')
+    parser.add_argument('--package', required=True,
+                        help='the rpm package name')
+    parser.add_argument('--email', required=True,
+                        help='email of the commit author (for the .changes file)')
+    parser.add_argument('--outdir', help='osc service parameter that does nothing')
     args = parser.parse_args()
+
+    if not args.filename:
+        args.filename = args.url.rsplit("/", 1)[1]
+
     download_tarball(args.url, args.filename)
     changelog = get_changelog_from_tarball(args.filename)
     our_commit = get_commit_from_spec(args.package)
