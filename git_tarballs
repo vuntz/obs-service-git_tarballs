@@ -17,6 +17,7 @@
 import argparse
 from datetime import datetime
 import glob
+import os
 import re
 import sys
 import tarfile
@@ -177,8 +178,8 @@ if __name__ == '__main__':
                         help='upstream tarball URL to download')
     parser.add_argument('--filename',
                         help='where to save the downloaded tarball')
-    parser.add_argument('--package', required=True,
-                        help='the rpm package name')
+    parser.add_argument('--package',
+                        help='the OBS package name')
     parser.add_argument('--email', required=True,
                         help='email of the commit author (for the .changes file)')
     parser.add_argument('--outdir', help='osc service parameter that does nothing')
@@ -186,6 +187,8 @@ if __name__ == '__main__':
 
     if not args.filename:
         args.filename = args.url.rsplit("/", 1)[1]
+    if not args.package:
+        args.package = os.getcwd().rsplit("/", 1)[1]
 
     download_tarball(args.url, args.filename)
     changelog = get_changelog_from_tarball(args.filename)
