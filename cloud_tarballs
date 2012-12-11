@@ -23,15 +23,12 @@ import tarfile
 import urllib
 
 
-TARBALLS = 'http://tarballs.openstack.org'
 COMMIT_HASH_SIZE = 7
 
 
 parser = argparse.ArgumentParser(description='Cloud Tarballs')
-parser.add_argument('--component', required=True,
-                    help='openstack component e.g. nova, keystone, novaclient')
-parser.add_argument('--version', required=True,
-                    help='component version')
+parser.add_argument('--url', required=True,
+                    help='URL to download the tarball from')
 parser.add_argument('--filename', required=True,
                     help='where to save the downloaded tarball')
 parser.add_argument('--package', required=True,
@@ -39,17 +36,13 @@ parser.add_argument('--package', required=True,
 parser.add_argument('--outdir', help='osc service parameter that does nothing')
 
 
-def download_tarball(component, version, filename):
+def download_tarball(url, filename):
     """Download an upstream tarball
 
-    :component: name of an openstack component
-    :version: the version of the tarball
+    :url: remote source of the tarball
     :filename: where to save the downloaded tarball
 
     """
-    url = '%(host)s/%(component)s/%(component)s-%(version)s.tar.gz' % {
-        'host': TARBALLS, 'component': component, 'version': version}
-
     try:
         urllib.urlretrieve(url, filename)
     except IOError as e:
@@ -190,7 +183,7 @@ def update_changes_file(package, changes):
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    download_tarball(args.component, args.version, args.filename)
+    download_tarball(args.url, args.filename)
     changelog = get_changelog_from_tarball(args.filename)
     our_commit = get_commit_from_spec(args.package)
     changes_list = parse_changelog(changelog)

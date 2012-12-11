@@ -1,12 +1,8 @@
 <service name="cloud_tarballs">
   <summary>Download OpenStack tarballs and update package data</summary>
   <description>This service downloads OpenStack component tarballs from upstream and updates the spec file version and changes file</description>
-  <param name="component">
-    <description>OpenStack component e.g. nova, keystone, novaclient, etc.</description>
-    <required/>
-  </param>
-  <param name="version">
-    <description>Component version. This will be used to figure out the remote path. E.g. stable-folsom, master, 2013.1~g2~20121209.17511.tar.gz</description>
+  <param name="url">
+    <description>URL of the tarball to download. It should contain a ChangeLog file in git log format.</description>
     <required/>
   </param>
   <param name="package">
