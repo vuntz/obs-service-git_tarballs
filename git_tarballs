@@ -26,7 +26,7 @@ import urllib
 COMMIT_HASH_SIZE = 7
 
 
-parser = argparse.ArgumentParser(description='Cloud Tarballs')
+parser = argparse.ArgumentParser(description='Git Tarballs')
 parser.add_argument('--url', required=True,
                     help='URL to download the tarball from')
 parser.add_argument('--filename', required=True,

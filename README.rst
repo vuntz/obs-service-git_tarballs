@@ -1,5 +1,5 @@
 ================================================
- OBS service for downloading openstack tarballs
+ OBS service for downloading git tarballs
 ================================================
 
 This is an `Open Build Service`_ source service.
@@ -15,7 +15,7 @@ The spec files should already contain the macro and ``%setup`` should use it e.g
     %setup -q -n %{component}-%{majorversion}
 
 
-The ``cloud_tarballs`` service will also change the specfile's ``Source:`` to the ``filename`` argument of the service.
+The ``git_tarballs`` service will also change the specfile's ``Source:`` to the ``filename`` argument of the service.
 
 
 TODO:
