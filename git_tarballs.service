@@ -1,4 +1,4 @@
-<service name="cloud_tarballs">
+<service name="git_tarballs">
   <summary>Download tarballs and update package data</summary>
   <description>This service downloads tarballs and updates the spec file version and changes file</description>
   <param name="url">
