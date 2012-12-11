@@ -57,7 +57,7 @@ def get_version_from_tarball(tar_name):
             sys.exit("Could not figure out version from directory "
                      "inside tarball: " + tar.firstmember.name)
 
-def get_latest_commit(changelog):
+def get_upstream_commit(changelog):
     try:
         return re.search(r'^commit (.*?)$', changelog, re.MULTILINE).group(1)
     except AttributeError:
@@ -94,20 +94,23 @@ def get_commit_from_spec(package):
             sys.exit("Could not parse version from spec file")
 
 
-def update_version_in_spec(package, version, latest_commit, filename):
-    new_version = '%s+git.%s.%s' % (version,
-                                    datetime.utcnow().strftime('%s'),
-                                    latest_commit[:COMMIT_HASH_SIZE])
+def package_version(upstream_version, upstream_commit):
+    return '%s+git.%s.%s' % (upstream_version,
+                             datetime.utcnow().strftime('%s'),
+                             upstream_commit[:COMMIT_HASH_SIZE])
+
+
+def update_spec_file(package_version, upstream_version, filename):
     for specfile in glob.glob('./*.spec'):
         with open(specfile, 'r+') as f:
             contents = f.read()
             f.seek(0)
             f.truncate()
             contents = re.sub(r'\n((Version:\s+).*)\n',
-                              r'\n\g<2>%s\n' % new_version,
+                              r'\n\g<2>%s\n' % package_version,
                               contents, count=1)
             contents = re.sub(r'\n((%define majorversion ).*)\n',
-                              r'\n\g<2>%s\n' % version,
+                              r'\n\g<2>%s\n' % upstream_version,
                               contents, count=1)
             contents = re.sub(r'\n((Source:\s+).*)\n',
                               r'\n\g<2>%s\n' % filename,
@@ -115,11 +118,11 @@ def update_version_in_spec(package, version, latest_commit, filename):
             f.write(contents)
 
 
-def diff_changes(changes_list, our_version):
-    """Return a list of dict changes newer than the ones in our_version
+def diff_changes(changes_list, package_commit):
+    """Return a list of dict changes newer than the ones in package_version
     
     :changes_list: a list of dicts from the ChangeLog file
-    :our_version: a git commit hash of the current version from the spec file
+    :package_commit: a git commit hash of the current version from the spec file
 
     Returns an empty list if there are no newer commits.
 
@@ -127,27 +130,28 @@ def diff_changes(changes_list, our_version):
     new_changes = []
     for change in changes_list:
         change = change.groupdict()
-        if change['commit'].startswith(our_version):
+        if change['commit'].startswith(package_commit):
             break
         new_changes.append(change)
 
     return new_changes
 
 
-def create_changes(changes_list, our_version, email):
+def create_changes(changes_list, package_version, package_commit, email):
     """Return a string with the new changes for the .changes file
 
     :changes_list: a list of dicts from the ChangeLog file
-    :our_version: a git commit hash of the current version from the spec file
-    :email: email address used to sing the .changes file
+    :package_version: release version string for the .changes file entry
+    :package_commit: a git commit hash of the current version from the spec file
+    :email: email address used for the .changes file entry
 
     """
-    changes_diff = diff_changes(changes_list, our_version)
+    changes_diff = diff_changes(changes_list, package_commit)
     if not changes_diff:
         sys.exit("There are no new changes.")
 
     timestamp = datetime.utcnow().strftime('%a %b %e %T UTC %Y')
-    commit_hash = changes_diff[0]['commit'][:COMMIT_HASH_SIZE]
+    #commit_hash = changes_diff[0]['commit'][:COMMIT_HASH_SIZE]
 
     # XXX Merge commits should be skipped when parsing the changelog
     commits = "  + " + "\n  + ".join(c['message'] for c in changes_diff
@@ -156,7 +160,7 @@ def create_changes(changes_list, our_version, email):
         '--------------------------------------------------------------------\n'
         '%(timestamp)s - %(email)s\n'
         '\n'
-        '- Update to latest git (%(commit_hash)s):\n'
+        '- Update to version %(package_version)s:\n'
         '%(commits)s\n'
         '\n' % locals())
 
@@ -191,13 +195,15 @@ if __name__ == '__main__':
         args.package = os.getcwd().rsplit("/", 1)[1]
 
     download_tarball(args.url, args.filename)
-    changelog = get_changelog_from_tarball(args.filename)
-    our_commit = get_commit_from_spec(args.package)
-    changes_list = parse_changelog(changelog)
-    changes = create_changes(changes_list, our_commit, args.email)
-    update_changes_file(args.package, changes)
 
-    latest_commit = get_latest_commit(changelog)
+    changelog = get_changelog_from_tarball(args.filename)
+    changes_list = parse_changelog(changelog)
+    upstream_commit = get_upstream_commit(changelog)
     upstream_version = get_version_from_tarball(args.filename)
-    update_version_in_spec(args.package, upstream_version, latest_commit,
-                           args.filename)
+
+    package_commit = get_commit_from_spec(args.package)
+    package_version = package_version(upstream_version, upstream_commit)
+    changes = create_changes(changes_list, package_version, package_commit, args.email)
+
+    update_changes_file(args.package, changes)
+    update_spec_file(package_version, upstream_version, args.filename)
