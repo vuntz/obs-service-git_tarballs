@@ -41,23 +41,28 @@ def download_tarball(url, filename):
 
 
 def get_changelog_from_tarball(tar_name):
-    with tarfile.open(tar_name) as tar:
+    try:
+        tar = tarfile.open(tar_name)
         changelog_file = next(f for f in tar.getnames()
                               if f.endswith('ChangeLog'))
         t = tar.getmember(changelog_file)
         changelog = tar.extractfile(t).read()
+    finally:
+        tar.close()
     return changelog
 
 
 def get_parent_dir_and_version_from_tarball(tar_name):
-    with tarfile.open(tar_name) as tar:
-        try:
-            parent_dir = tar.firstmember.name
-            version = parent_dir.rsplit('-', 1)[1]
-            return (parent_dir, version)
-        except IndexError:
-            sys.exit("Could not figure out version from directory "
-                     "inside tarball: " + tar.firstmember.name)
+    try:
+        tar = tarfile.open(tar_name)
+        parent_dir = tar.firstmember.name
+        version = parent_dir.rsplit('-', 1)[1]
+        return (parent_dir, version)
+    except IndexError:
+        sys.exit("Could not figure out version from directory "
+                 "inside tarball: " + tar.firstmember.name)
+    finally:
+        tar.close()
 
 def get_upstream_commit(changelog):
     try:
@@ -88,12 +93,14 @@ def parse_changelog(changelog):
 
 
 def get_commit_from_spec(package):
-    with open(package + '.spec') as f:
-        try:
-            return re.search(r'^Version:\s+.*\+git\.\d+\.(.*?)(\s+#)?$',
-                             f.read(), flags=re.MULTILINE).group(1)
-        except AttributeError:
-            sys.exit("Could not parse version from spec file")
+    try:
+        f = open(package + '.spec')
+        return re.search(r'^Version:\s+.*\+git\.\d+\.(.*?)(\s+#)?$',
+                         f.read(), flags=re.MULTILINE).group(1)
+    except AttributeError:
+        sys.exit("Could not parse version from spec file")
+    finally:
+        f.close()
 
 
 def package_version(upstream_version, upstream_commit):
@@ -104,7 +111,8 @@ def package_version(upstream_version, upstream_commit):
 
 def update_spec_file(package_version, tarball_parent_dir, filename):
     for specfile in glob.glob('./*.spec'):
-        with open(specfile, 'r+') as f:
+        try:
+            f = open(specfile, 'r+')
             contents = f.read()
             f.seek(0)
             f.truncate()
@@ -118,6 +126,8 @@ def update_spec_file(package_version, tarball_parent_dir, filename):
                               r'\n\g<2>%s\n' % filename,
                               contents, count=1)
             f.write(contents)
+        finally:
+            f.close()
 
 
 def diff_changes(changes_list, package_commit):
@@ -172,11 +182,14 @@ def create_changes(changes_list, package_version, package_commit, email):
 
 def update_changes_file(package, changes):
     for changes_file in glob.glob('./*.changes'):
-        with open(changes_file, 'r+') as f:
+        try: 
+            f = open(changes_file, 'r+')
             contents = f.read()
             f.seek(0)
             f.write(changes)
             f.write(contents)
+        finally:
+            f.close()
 
 
 if __name__ == '__main__':
