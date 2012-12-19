@@ -105,7 +105,7 @@ def get_commit_from_spec(package):
 
 def package_version(upstream_version, upstream_commit):
     return '%s+git.%s.%s' % (upstream_version,
-                             datetime.utcnow().strftime('%s'),
+                             datetime.now().strftime('%s'),
                              upstream_commit[:COMMIT_HASH_SIZE])
 
 
