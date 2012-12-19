@@ -6,16 +6,9 @@ This is an `Open Build Service`_ source service.
 
 Requires argparse which is part of python2.7, but available as a third-party dependency in python2.6.
 
-Uses a ``majorversion`` macro in the spec file which contains the upstream stable version number.
-
-The spec files should already contain the macro and ``%setup`` should use it e.g::
-
-    %define majorversion 201
-    ...
-    %setup -q -n %{component}-%{majorversion}
-
-
-The ``git_tarballs`` service will also change the specfile's ``Source:`` to the ``filename`` argument of the service.
+The ``git_tarballs`` service will also change the specfile's ``Source:`` to the
+``filename`` argument of the service and the ``%setup -q`` line to match the
+parent folder name in the tarball.
 
 
 TODO:

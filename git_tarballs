@@ -49,10 +49,12 @@ def get_changelog_from_tarball(tar_name):
     return changelog
 
 
-def get_version_from_tarball(tar_name):
+def get_parent_dir_and_version_from_tarball(tar_name):
     with tarfile.open(tar_name) as tar:
         try:
-            return tar.firstmember.name.rsplit('-', 1)[1]
+            parent_dir = tar.firstmember.name
+            version = parent_dir.rsplit('-', 1)[1]
+            return (parent_dir, version)
         except IndexError:
             sys.exit("Could not figure out version from directory "
                      "inside tarball: " + tar.firstmember.name)
@@ -100,7 +102,7 @@ def package_version(upstream_version, upstream_commit):
                              upstream_commit[:COMMIT_HASH_SIZE])
 
 
-def update_spec_file(package_version, upstream_version, filename):
+def update_spec_file(package_version, tarball_parent_dir, filename):
     for specfile in glob.glob('./*.spec'):
         with open(specfile, 'r+') as f:
             contents = f.read()
@@ -109,8 +111,8 @@ def update_spec_file(package_version, upstream_version, filename):
             contents = re.sub(r'\n((Version:\s+).*)\n',
                               r'\n\g<2>%s\n' % package_version,
                               contents, count=1)
-            contents = re.sub(r'\n((%define majorversion ).*)\n',
-                              r'\n\g<2>%s\n' % upstream_version,
+            contents = re.sub(r'\n((%setup\s+).*)\n',
+                              r'\n\g<2>-q -n %s\n' % tarball_parent_dir,
                               contents, count=1)
             contents = re.sub(r'\n((Source:\s+).*)\n',
                               r'\n\g<2>%s\n' % filename,
@@ -199,11 +201,11 @@ if __name__ == '__main__':
     changelog = get_changelog_from_tarball(args.filename)
     changes_list = parse_changelog(changelog)
     upstream_commit = get_upstream_commit(changelog)
-    upstream_version = get_version_from_tarball(args.filename)
+    tarball_parent_dir, upstream_version = get_parent_dir_and_version_from_tarball(args.filename)
 
     package_commit = get_commit_from_spec(args.package)
     package_version = package_version(upstream_version, upstream_commit)
     changes = create_changes(changes_list, package_version, package_commit, args.email)
 
     update_changes_file(args.package, changes)
-    update_spec_file(package_version, upstream_version, args.filename)
+    update_spec_file(package_version, tarball_parent_dir, args.filename)
