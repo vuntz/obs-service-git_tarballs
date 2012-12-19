@@ -150,7 +150,8 @@ def create_changes(changes_list, package_version, package_commit, email):
     """
     changes_diff = diff_changes(changes_list, package_commit)
     if not changes_diff:
-        sys.exit("There are no new changes.")
+        print "There are no new changes."
+        return ''
 
     timestamp = datetime.utcnow().strftime('%a %b %e %T UTC %Y')
     #commit_hash = changes_diff[0]['commit'][:COMMIT_HASH_SIZE]
