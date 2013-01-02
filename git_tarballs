@@ -164,7 +164,6 @@ def create_changes(changes_list, package_version, package_commit, email):
         return ''
 
     timestamp = datetime.utcnow().strftime('%a %b %e %T UTC %Y')
-    #commit_hash = changes_diff[0]['commit'][:COMMIT_HASH_SIZE]
 
     # XXX Merge commits should be skipped when parsing the changelog
     commits = "  + " + "\n  + ".join(c['message'] for c in changes_diff
