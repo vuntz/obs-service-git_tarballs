@@ -161,7 +161,7 @@ def create_changes(changes_list, package_version, package_commit, email):
     changes_diff = diff_changes(changes_list, package_commit)
     if not changes_diff:
         print "There are no new changes."
-        return ''
+        return
 
     timestamp = datetime.utcnow().strftime('%a %b %e %T UTC %Y')
 
@@ -220,5 +220,6 @@ if __name__ == '__main__':
     package_version = package_version(upstream_version, upstream_commit)
     changes = create_changes(changes_list, package_version, package_commit, args.email)
 
-    update_changes_file(args.package, changes)
+    if changes:
+        update_changes_file(args.package, changes)
     update_spec_file(package_version, tarball_parent_dir, args.filename)
