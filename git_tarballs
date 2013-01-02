@@ -47,6 +47,8 @@ def get_changelog_from_tarball(tar_name):
                               if f.endswith('ChangeLog'))
         t = tar.getmember(changelog_file)
         changelog = tar.extractfile(t).read()
+    except StopIteration:
+        sys.exit("Could not find a 'ChangeLog' file. ")
     finally:
         tar.close()
     return changelog
@@ -161,10 +163,9 @@ def create_changes(changes_list, package_version, package_commit, email):
     changes_diff = diff_changes(changes_list, package_commit)
     if not changes_diff:
         print "There are no new changes."
-        return ''
+        return
 
     timestamp = datetime.utcnow().strftime('%a %b %e %T UTC %Y')
-    #commit_hash = changes_diff[0]['commit'][:COMMIT_HASH_SIZE]
 
     # XXX Merge commits should be skipped when parsing the changelog
     commits = "  + " + "\n  + ".join(c['message'] for c in changes_diff
@@ -221,5 +222,6 @@ if __name__ == '__main__':
     package_version = package_version(upstream_version, upstream_commit)
     changes = create_changes(changes_list, package_version, package_commit, args.email)
 
-    update_changes_file(args.package, changes)
+    if changes:
+        update_changes_file(args.package, changes)
     update_spec_file(package_version, tarball_parent_dir, args.filename)
