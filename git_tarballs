@@ -117,7 +117,7 @@ def get_commit_from_spec(package):
         return re.search(r'^Version:\s+.*\+git\.\d+\.(.*?)(\s+#.*)?$',
                          f.read(), flags=re.MULTILINE).group(1)
     except AttributeError:
-        sys.exit("Could not parse version from spec file")
+        return None
     finally:
         f.close()
 
@@ -238,8 +238,15 @@ if __name__ == '__main__':
 
     package_commit = get_commit_from_spec(args.package)
     package_version = package_version(upstream_version, upstream_commit)
-    changes = create_changes(changes_list, package_version, package_commit, args.email)
+    if not package_commit:
+        # on first run, we only set the fields in the spec file;
+        # there are no changes
+        update_spec_file(package_version, tarball_parent_dir, args.filename)
+        print "Initialized .spec file with git_tarball."
+        sys.exit()
 
+    changes = create_changes(changes_list, package_version,
+                             package_commit, args.email)
     if changes:
         update_changes_file(args.package, changes)
-    update_spec_file(package_version, tarball_parent_dir, args.filename)
+        update_spec_file(package_version, tarball_parent_dir, args.filename)
