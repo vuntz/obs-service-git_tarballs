@@ -105,9 +105,16 @@ def parse_changelog(changelog):
 
 
 def get_commit_from_spec(package):
+    """Parse the spec's Version field for a previously set commit version
+
+    :package: name of the package
+
+    Returns None in case no commit could be read.
+
+    """
     try:
         f = open(package + '.spec')
-        return re.search(r'^Version:\s+.*\+git\.\d+\.(.*?)(\s+#)?$',
+        return re.search(r'^Version:\s+.*\+git\.\d+\.(.*?)(\s+#.*)?$',
                          f.read(), flags=re.MULTILINE).group(1)
     except AttributeError:
         sys.exit("Could not parse version from spec file")
