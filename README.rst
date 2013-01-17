@@ -22,13 +22,11 @@ On the first run, ``git_tarballs`` will just set the spec file's
 be updated with commit message information when newer commits (compared
 to the one now set in ``Version``) are found.
 
-Dependencies
-------------
+Up to date requirements are kept in the files ``pip-requires`` and
+``test-requires``
 
-Requires argparse which is part of python2.7, but available as a
-third-party dependency in python2.6.
-
-The tests require `python-mock`_. To run them, just use ``nosetests`` or ``python -m unittest discover`` (on python2.7).
+To run the testsuite, just use ``nosetests`` or ``python -m unittest
+discover`` (on python2.7).
 
 TODO
 

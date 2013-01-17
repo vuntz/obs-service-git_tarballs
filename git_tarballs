@@ -70,11 +70,13 @@ def get_parent_dir_and_version_from_tarball(tar_name, version_regexp):
                  "version in '%s': no match" % (version_regexp, parent_dir))
     elif len(match.groups()) != 1:
         sys.exit("Could not use '%s' as regular expression to find "
-                 "version in '%s': more than one match" % (version_regexp, parent_dir))
+                 "version in '%s': more than one match" %
+                 (version_regexp, parent_dir))
     else:
         version = match.group(1)
 
     return (parent_dir, version)
+
 
 def get_upstream_commit(changelog):
     try:
@@ -151,9 +153,10 @@ def update_spec_file(package_version, tarball_parent_dir, filename):
 
 def diff_changes(changes_list, package_commit):
     """Return a list of dict changes newer than the ones in package_version
-    
+
     :changes_list: a list of dicts from the ChangeLog file
-    :package_commit: a git commit hash of the current version from the spec file
+    :package_commit: a git commit hash of the current version from the
+    spec file
 
     Returns an empty list if there are no newer commits.
 
@@ -173,7 +176,8 @@ def create_changes(changes_list, package_version, package_commit, email):
 
     :changes_list: a list of dicts from the ChangeLog file
     :package_version: release version string for the .changes file entry
-    :package_commit: a git commit hash of the current version from the spec file
+    :package_commit: a git commit hash of the current version from the
+    spec file
     :email: email address used for the .changes file entry
 
     """
@@ -188,8 +192,8 @@ def create_changes(changes_list, package_version, package_commit, email):
     commits = "  + " + "\n  + ".join(c['message'] for c in changes_diff
                                      if not c['message'].startswith('Merge "'))
     change = (
-        '--------------------------------------------------------------------\n'
-        '%(timestamp)s - %(email)s\n'
+        '--------------------------------------------------------------------'
+        '\n%(timestamp)s - %(email)s\n'
         '\n'
         '- Update to version %(package_version)s:\n'
         '%(commits)s\n'
@@ -199,7 +203,7 @@ def create_changes(changes_list, package_version, package_commit, email):
 
 
 def update_changes_file(package, changes):
-    try: 
+    try:
         f = open(package + '.changes', 'r+')
         contents = f.read()
         f.seek(0)
@@ -218,10 +222,14 @@ if __name__ == '__main__':
     parser.add_argument('--package',
                         help='the OBS package name')
     parser.add_argument('--email', required=True,
-                        help='email of the commit author (for the .changes file)')
+                        help='email of the commit author '
+                        '(for the .changes file)')
     parser.add_argument('--version-regexp', default='.*-([^-]+)',
-                        help='regular expression for extracting version from top-level directory in tarball (default: ".*-([^-]+)")')
-    parser.add_argument('--outdir', help='osc service parameter that does nothing')
+                        help='regular expression for extracting version from '
+                        'top-level directory in tarball '
+                        '(default: ".*-([^-]+)")')
+    parser.add_argument('--outdir',
+                        help='osc service parameter that does nothing')
     args = parser.parse_args()
 
     if not args.filename:
@@ -234,7 +242,9 @@ if __name__ == '__main__':
     changelog = get_changelog_from_tarball(args.filename)
     changes_list = parse_changelog(changelog)
     upstream_commit = get_upstream_commit(changelog)
-    tarball_parent_dir, upstream_version = get_parent_dir_and_version_from_tarball(args.filename, args.version_regexp)
+    tarball_parent_dir, upstream_version = \
+        get_parent_dir_and_version_from_tarball(
+            args.filename, args.version_regexp)
 
     package_commit = get_commit_from_spec(args.package)
     package_version = package_version(upstream_version, upstream_commit)
