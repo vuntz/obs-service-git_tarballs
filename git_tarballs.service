@@ -15,4 +15,7 @@
     <description>User's email that will be used to sign the rpm's .changes file</description>
     <required/>
   </param>
+  <param name="version-regexp">
+    <description>Regular expression for extracting version from top-level directory in tarball (default: ".*-([^-]+)")</description>
+  </param>
 </service>

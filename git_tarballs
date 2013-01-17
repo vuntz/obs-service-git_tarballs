@@ -54,17 +54,27 @@ def get_changelog_from_tarball(tar_name):
     return changelog
 
 
-def get_parent_dir_and_version_from_tarball(tar_name):
+def get_parent_dir_and_version_from_tarball(tar_name, version_regexp):
+    tar = tarfile.open(tar_name)
+    parent_dir = tar.firstmember.name
+    tar.close()
+
     try:
-        tar = tarfile.open(tar_name)
-        parent_dir = tar.firstmember.name
-        version = parent_dir.rsplit('-', 1)[1]
-        return (parent_dir, version)
-    except IndexError:
-        sys.exit("Could not figure out version from directory "
-                 "inside tarball: " + tar.firstmember.name)
-    finally:
-        tar.close()
+        match = re.match(version_regexp, parent_dir)
+    except re.error, e:
+        sys.exit("Could not use '%s' as regular expression to find "
+                 "version: " % (version_regexp, e))
+
+    if match is None:
+        sys.exit("Could not use '%s' as regular expression to find "
+                 "version in '%s': no match" % (version_regexp, parent_dir))
+    elif len(match.groups()) != 1:
+        sys.exit("Could not use '%s' as regular expression to find "
+                 "version in '%s': more than one match" % (version_regexp, parent_dir))
+    else:
+        version = match.group(1)
+
+    return (parent_dir, version)
 
 def get_upstream_commit(changelog):
     try:
@@ -203,6 +213,8 @@ if __name__ == '__main__':
                         help='the OBS package name')
     parser.add_argument('--email', required=True,
                         help='email of the commit author (for the .changes file)')
+    parser.add_argument('--version-regexp', default='.*-([^-]+)',
+                        help='regular expression for extracting version from top-level directory in tarball (default: ".*-([^-]+)")')
     parser.add_argument('--outdir', help='osc service parameter that does nothing')
     args = parser.parse_args()
 
@@ -216,7 +228,7 @@ if __name__ == '__main__':
     changelog = get_changelog_from_tarball(args.filename)
     changes_list = parse_changelog(changelog)
     upstream_commit = get_upstream_commit(changelog)
-    tarball_parent_dir, upstream_version = get_parent_dir_and_version_from_tarball(args.filename)
+    tarball_parent_dir, upstream_version = get_parent_dir_and_version_from_tarball(args.filename, args.version_regexp)
 
     package_commit = get_commit_from_spec(args.package)
     package_version = package_version(upstream_version, upstream_commit)
