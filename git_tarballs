@@ -140,8 +140,13 @@ def update_spec_file(package_version, tarball_parent_dir, filename):
             contents = re.sub(r'\n((Version:\s+).*)\n',
                               r'\n\g<2>%s\n' % package_version,
                               contents, count=1)
-            contents = re.sub(r'\n((%setup\s+).*)\n',
-                              r'\n\g<2>-q -n %s\n' % tarball_parent_dir,
+            # remove previous "-n foo" from %setup line
+            contents = re.sub(r'\n((%setup(?:\s+\S+)*?)\s*-n\s+\S+(.*))\n',
+                              r'\n\g<2>\g<3>\n',
+                              contents, count=1)
+            # add new "-n foo" from %setup line
+            contents = re.sub(r'\n((%setup.*))\n',
+                              r'\n\g<2> -n %s\n' % tarball_parent_dir,
                               contents, count=1)
             contents = re.sub(r'\n((Source0?:\s+).*)\n',
                               r'\n\g<2>%s\n' % filename,
